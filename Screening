@@ -1,0 +1,102 @@
+##실 사용한 전체 코드와 데이터 파일은 연구 목적으로 공유 가능합니다.
+
+import pandas as pd
+import numpy as np
+import matplotlib as mpl
+mpl.rc('font', family = 'Malgun Gothic')
+import matplotlib.pyplot as plt
+import datetime
+import math
+import openpyxl
+import plotly.graph_objects as go 
+from plotly.subplots import make_subplots
+
+
+# KOSDAQ.xlxs
+opercf=pd.read_excel('/content/drive/MyDrive/Colab Notebooks/DART/안태하_스크리닝.xlsx', sheet_name="영업활동현금흐름",index_col=0)
+netincome=pd.read_excel('/content/drive/MyDrive/Colab Notebooks/DART/안태하_스크리닝.xlsx', sheet_name="당기순이익",index_col=0)
+quickratio=pd.read_excel('/content/drive/MyDrive/Colab Notebooks/DART/안태하_스크리닝.xlsx',sheet_name="당좌비율", index_col=0)
+pbr=pd.read_excel('/content/drive/MyDrive/Colab Notebooks/DART/안태하_스크리닝.xlsx', sheet_name="PBR", index_col=0)
+revenuey=pd.read_excel('/content/drive/MyDrive/Colab Notebooks/DART/안태하_스크리닝.xlsx', sheet_name="3년평균_매출액증가율",index_col=0)
+# 주가.xlsx
+price_data=pd.read_excel('/content/drive/MyDrive/Colab Notebooks/DART/dartworkspace/주가.xlsx', index_col=0)
+
+
+## 조건 1. 최근 3년간 영업활동현금흐름 0 이상"""
+
+opercf = opercf.T
+new_opercf=opercf.iloc[:, -3:]
+new_opercf
+
+new_opercf>=0
+
+new_opercf=new_opercf[new_opercf>=0]
+new_opercf
+
+new_opercf.dropna(axis=0, inplace=True)
+new_opercf
+
+"""## 2. 최근 3개년도 당기순이익 0 이상
+
+
+"""
+
+netincome = netincome.T
+new_netincome=netincome.iloc[:, -3:]
+new_netincome
+
+new_netincome=new_netincome[new_netincome>=0]
+new_netincome
+
+new_netincome.dropna(axis=0, inplace=True)
+new_netincome
+
+"""## 3. 당좌비율 170프로 이상
+
+
+"""
+
+quickratio = quickratio.T
+new_quickratio=quickratio.iloc[:, -1:]
+new_quickratio
+
+new_quickratio=new_quickratio[new_quickratio>=170]
+new_quickratio.dropna(axis=0, inplace=True)
+new_quickratio
+
+"""## 4. 3년 평균 대비 매출액 15프로 증가
+
+
+
+
+
+"""
+
+revenuey = revenuey.T
+new_revenuey = revenuey.iloc[:, -1:]
+new_revenuey
+
+new_revenuey=new_revenuey[new_revenuey>15]
+new_revenuey.dropna(axis=0, inplace=True)
+new_revenuey
+
+"""## 5. PBR 1 이하인 주식"""
+
+pbr = pbr.T
+new_pbr = pbr
+new_pbr = new_pbr[new_pbr<=1]
+new_pbr.dropna(axis=0, inplace=True)
+new_pbr
+
+list1 = new_netincome.index.values.tolist()
+list2 = new_opercf.index.values.tolist()
+list3 = new_quickratio.index.values.tolist()
+list4 = new_revenuey.index.values.tolist()
+list5 = new_pbr.index.values.tolist()
+
+list1
+
+common_values = list(set(list1) & set(list2) & set(list3) & set(list4) & set(list5))
+len(common_values)
+
+common_values
