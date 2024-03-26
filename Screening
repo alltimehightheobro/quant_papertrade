@@ -1,0 +1,113 @@
+import pandas as pd
+
+# 파일 경로
+file_path = '/content/drive/MyDrive/DART2024Squant/rawdata.xlsx'
+
+# 수정된 엑셀 파일 경로 설정
+cleaned_file_path = '/content/drive/MyDrive/DART2024Squant/cleaned_data.xlsx'
+
+# 수정된 순매수대금 및 시가총액 정보 로드
+data_cleaned = pd.read_excel(cleaned_file_path)
+market_cap_data_cleaned = pd.read_excel(cleaned_file_path, sheet_name='시가총액')
+
+# 순매수대금 데이터에서 날짜(Symbols) 열을 제외하고 시가총액으로 나눔
+ratios_cleaned = data_cleaned.set_index('Symbol').div(market_cap_data_cleaned.set_index('Symbol'))
+
+# 전체 기간에 대해 각 기업별로 순매수대금을 시가총액으로 나눈 평균 계산
+overall_average_by_company = ratios_cleaned.mean(axis=0)
+
+# Min-Max Scaling을 사용하여 0~100점 사이로 표준화
+overall_average_by_company_scaled = (overall_average_by_company - overall_average_by_company.min()) / (overall_average_by_company.max() - overall_average_by_company.min()) * 100
+
+# 내림차순으로 정렬하여 상위 20개 기업 출력
+top_20_companies_scaled = overall_average_by_company_scaled.sort_values(ascending=False).head(100)
+
+# 결과 출력
+print(top_20_companies_scaled)
+# 수정된 시가총액 정보 로드
+market_cap_data_cleaned = pd.read_excel(cleaned_file_path, sheet_name='시가총액')
+
+# 연구개발비 정보 로드
+rd_expense_data = pd.read_excel(cleaned_file_path, sheet_name='연구개발비')
+
+# 시가총액 데이터의 마지막 행(가장 최근 날짜) 선택 (Series로 반환되므로 직접 나눗셈 가능)
+latest_market_cap = market_cap_data_cleaned.iloc[-1, 1:]  # 첫 번째 열(Symbol) 제외
+
+# 연구개발비 데이터에서 Symbol 열 제거 후 첫 번째 행 선택
+latest_rd_expense = rd_expense_data.iloc[0, 1:]  # 첫 번째 열(Symbol) 제외
+
+# 시가총액으로 연구개발비 나누기
+rd_to_market_cap_ratio = latest_rd_expense / latest_market_cap
+
+# Min-Max Scaling을 사용하여 0~100점 사이로 표준화
+rd_to_market_cap_ratio_scaled = (rd_to_market_cap_ratio - rd_to_market_cap_ratio.min()) / (rd_to_market_cap_ratio.max() - rd_to_market_cap_ratio.min()) * 100
+
+# 결과를 내림차순으로 정렬
+rd_to_market_cap_ratio_scaled_sorted = rd_to_market_cap_ratio_scaled.dropna().sort_values(ascending=False)
+
+# 상위 결과 출력
+print(rd_to_market_cap_ratio_scaled_sorted.head())
+
+
+# 수정된 시가총액 정보 로드
+market_cap_data_cleaned = pd.read_excel(cleaned_file_path, sheet_name='시가총액')
+
+# 광고선전비 정보 로드
+ad_expense_data = pd.read_excel(cleaned_file_path, sheet_name='광고선전비')
+
+# 시가총액 데이터의 마지막 행(가장 최근 날짜) 선택 (Series로 반환되므로 직접 나눗셈 가능)
+latest_market_cap = market_cap_data_cleaned.iloc[-1, 1:]  # 첫 번째 열(Symbol) 제외
+
+# 광고선전비 데이터에서 Symbol 열 제거 후 첫 번째 행 선택
+latest_ad_expense = ad_expense_data.iloc[0, 1:]  # 첫 번째 열(Symbol) 제외
+
+# 시가총액으로 광고선전비 나누기
+ad_to_market_cap_ratio = latest_ad_expense / latest_market_cap
+
+# Min-Max Scaling을 사용하여 0~100점 사이로 표준화
+ad_to_market_cap_ratio_scaled = (ad_to_market_cap_ratio - ad_to_market_cap_ratio.min()) / (ad_to_market_cap_ratio.max() - ad_to_market_cap_ratio.min()) * 100
+
+# 결과를 내림차순으로 정렬
+ad_to_market_cap_ratio_scaled_sorted = ad_to_market_cap_ratio_scaled.dropna().sort_values(ascending=False)
+
+# 상위 결과 확인
+ad_to_market_cap_ratio_scaled_sorted.head()
+
+
+
+# 수정주가 정보 로드 및 날짜를 인덱스로 설정
+adjusted_price_data = pd.read_excel(cleaned_file_path, sheet_name='수정주가')
+adjusted_price_data.set_index('Symbol', inplace=True)
+
+# 가장 최근 날짜를 기준으로 50일, 100일 전 모멘텀 계산
+momentum_50 = (adjusted_price_data.iloc[-1] / adjusted_price_data.shift(50).iloc[-1] - 1) * 100
+momentum_100 = (adjusted_price_data.iloc[-1] / adjusted_price_data.shift(100).iloc[-1] - 1) * 100
+
+# Min-Max Scaling을 사용하여 0~100점 사이로 표준화
+momentum_50_scaled = (momentum_50 - momentum_50.min()) / (momentum_50.max() - momentum_50.min()) * 100
+momentum_100_scaled = (momentum_100 - momentum_100.min()) / (momentum_100.max() - momentum_100.min()) * 100
+
+# 결과 확인 (내림차순으로 정렬하여 상위 결과 출력)
+momentum_50_scaled_sorted = momentum_50_scaled.dropna().sort_values(ascending=False)
+momentum_100_scaled_sorted = momentum_100_scaled.dropna().sort_values(ascending=False)
+
+# 상위 5개 기업의 모멘텀 지표 출력
+print("50일 모멘텀 지표 (상위 5개 기업):", momentum_50_scaled_sorted.head())
+print("100일 모멘텀 지표 (상위 5개 기업):", momentum_100_scaled_sorted.head())
+
+
+# 각 지표별 점수 데이터프레임 생성 및 False로 데이터가 없는 경우 처리
+df_scores = pd.DataFrame({
+    '순매수대금': overall_average_by_company_scaled,
+    '연구개발비': rd_to_market_cap_ratio_scaled,
+    '광고선전비': ad_to_market_cap_ratio_scaled,
+    '90일 모멘텀': momentum_50_scaled,
+    '180일 모멘텀': momentum_100_scaled
+}).fillna(False)
+
+# 엑셀 파일로 저장
+output_file_path = '/content/drive/MyDrive/DART2024Squant/comprehensive_scores.xlsx'
+df_scores.to_excel(output_file_path)
+
+# 저장된 파일 경로 출력
+print(f"저장된 파일 경로: {output_file_path}")
